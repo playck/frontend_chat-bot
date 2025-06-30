@@ -1,0 +1,10 @@
+.env
+
+myenv/
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
