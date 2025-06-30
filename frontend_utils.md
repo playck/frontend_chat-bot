@@ -36,7 +36,7 @@ console.log(formatDate(undefined, "YYYY/MM/DD"));
 // 출력: undefined
 ```
 
-**키워드**: 날짜, 포맷, dayjs, locale, 한국어, date format, i18n
+**키워드**: 날짜, 포맷, 변환, dayjs, locale, 한국어, date format, i18n
 
 ---
 
