@@ -16,7 +16,7 @@ store = {}
 
 
 def get_llm(model='gpt-4.1-nano'):
-    llm = ChatOpenAI(model=model)
+    llm = ChatOpenAI(model=model, temperature=0.1)
     return llm
 
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
@@ -31,7 +31,13 @@ def get_retriever():
     )
     index_name = 'front-end-info-index' 
     database = PineconeVectorStore.from_existing_index(index_name=index_name, embedding=embedding)
-    retriever = database.as_retriever(search_kwargs={'k': 2})
+    retriever = database.as_retriever(
+        search_type="similarity_score_threshold",
+        search_kwargs={
+            'k': 4,
+            'score_threshold': 0.7
+        }
+    )
     return retriever
 
 def get_history_retriever():
@@ -211,11 +217,18 @@ def get_rag_chain():
     system_prompt = (
         "당신은 프론트엔드 프로젝트 함수 전문가입니다. 사용자가 필요한 프론트엔드 프로젝트 함수에 대해 질문하면 "
         "아래 제공된 프론트엔드 프로젝트 함수 모음에서 적절한 함수를 찾아 추천해주세요."
-        "함수의 사용법과 예제도 함께 제공해주세요."
-        "함수와 관련없는 질문일 때는 프론트엔드 유틸 함수 관련 질문만 가능하다고 답변해주세요."
-        "만약 정확한 함수가 없다면 해당 함수는 없다고 답변해주세요."
-        "답변할 때는 함수명과 간단한 설명을 먼저 제공하고, 코드 예제를 포함해주세요."
-        "2-3문장 정도의 간결한 답변을 원합니다."
+        "\n\n"
+        "**중요한 규칙:**\n"
+        "1. 반드시 제공된 context 문서에서만 정보를 찾아 답변하세요.\n"
+        "2. context에 없는 함수나 정보는 절대 만들어내거나 추측하지 마세요.\n"
+        "3. 질문과 관련된 함수가 context에 없다면 '해당 질문에 관련된 함수는 없습니다'라고 명확히 답변하세요.\n"
+        "4. 확실하지 않은 정보는 제공하지 마세요.\n"
+        "5. 함수와 관련없는 질문일 때는 프론트엔드 유틸 함수 관련 질문만 가능하다고 답변해주세요.\n"
+        "\n"
+        "답변 형식:\n"
+        "- context에서 관련 함수를 찾은 경우: 함수명, 설명, 사용법과 예제를 제공\n"
+        "- context에서 관련 함수를 찾지 못한 경우: '해당 질문에 관련된 함수는 없습니다'\n"
+        "- 2-3문장 정도의 간결한 답변을 원합니다.\n"
         "\n\n"
         "{context}"
     )
